@@ -4,6 +4,7 @@ const boardBottom = document.getElementById('bottom');
 let boardArr = [];
 let piecesArr = [];
 let helperArr = [8, 7, 6, 5, 4, 3, 2, 1, 0];
+let swtich = false;
 
 function toLetters(num) {
     var mod = num % 26,
@@ -23,6 +24,7 @@ function createBoard(){
             (row+column) % 2 === 0 ? tile.style.backgroundColor = "#769656" : tile.style.backgroundColor = "#eeeed2";   
             tile.classList.add('tile');
             tile.id = toLetters(row).toLowerCase() + column;
+            tile.addEventListener('click', () => moveTo(tile));
             chessBoard.appendChild(tile);
         }
         boardArr.push(currColumnb);
@@ -53,34 +55,26 @@ function drawPieces(){
     for(let column = 8, j = 0; column > 0, j < 8 ; column--, j++){
         for(let row = 1, i = 0; row <= 8, i < 8 ; row++, i++){
             let currSquare = document.getElementById(toLetters(row).toLowerCase() + column);
-            piecesArr[j][i][0] != null ? currSquare.innerHTML=`<img onclick="${piecesArr[j][i][1]}Move(this)" data-key="${currSquare.id}" alt="${piecesArr[j][i][0]+piecesArr[j][i][1]}" src="./assets/${piecesArr[j][i][0]+piecesArr[j][i][1]}.png"></img>` : null;
+            piecesArr[j][i][0] != null ? currSquare.innerHTML=`<img onclick="move(event)" data-key="${currSquare.id}" alt="${piecesArr[j][i][0]+piecesArr[j][i][1]}" src="./assets/${piecesArr[j][i][0]+piecesArr[j][i][1]}.png"></img>` : null;
         }
     }
 }
 
-function pMove(e){
-    console.log(piecesArr[helperArr[e.dataset.key.split('')[1]]][e.dataset.key.split('')[0].charCodeAt(0) - 97])
+function move(e){
+    const piece = piecesArr[helperArr[e.target.dataset.key.split('')[1]]][e.target.dataset.key.split('')[0].charCodeAt(0) - 97];
+    e.stopPropagation()
+    swtich != false ? swtich[0] === piece[0] ? swtich = [piece[0], e.target] : console.log('nam') : swtich = [piece[0], e.target];
+    console.log(piece, swtich[1]);
 }
 
-function RMove(e){
-    console.log(piecesArr[helperArr[e.dataset.key.split('')[1]]][e.dataset.key.split('')[0].charCodeAt(0) - 97])
+function moveTo(tile){
+    if(swtich != false){
+        swtich[1].parentNode.removeChild(swtich[1]);
+        tile.appendChild(swtich[1]);
+        swtich = false;
+    }
+    console.log(tile);
 }
-
-function NMove(e){
-    console.log(piecesArr[helperArr[e.dataset.key.split('')[1]]][e.dataset.key.split('')[0].charCodeAt(0) - 97])
-}
-
-function BMove(e){
-    console.log(piecesArr[helperArr[e.dataset.key.split('')[1]]][e.dataset.key.split('')[0].charCodeAt(0) - 97])
-}
-
-function KMove(e){
-    console.log(piecesArr[helperArr[e.dataset.key.split('')[1]]][e.dataset.key.split('')[0].charCodeAt(0) - 97])
-}
-
-function QMove(e){
-    console.log(piecesArr[helperArr[e.dataset.key.split('')[1]]][e.dataset.key.split('')[0].charCodeAt(0) - 97])
-}  
 
 createBoard()
 drawPieces()
