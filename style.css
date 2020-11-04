@@ -51,3 +51,8 @@
     width: 100px;
     height: 100px;
 }
+
+.possible{
+    box-shadow: 0px 0px 10px red;
+    z-index: 1;
+}
