@@ -207,15 +207,29 @@ function calcPossibleMoves(piece, pieceLocation){
             break;
 
         case 'N':
-        
+           
            let y = 2;
-           let x = 1
+           let x = 1;
            for(let i = 0, j = 1; i < 8; j++, i++){
-                let newY = x * -1 + 4 * -Math.floor(j/4);
-                x = y - 2 * Math.floor(j/4)
+                let newY = x * -1 + -Math.floor(j/5);
+                x = y - Math.floor(j/5)
                 y = newY;
-                j > 3 ? j = -1 : '';
-                console.log(boardArr[helperArr[pieceLocation[0]+ 1 + x]] [pieceLocation[1] - y])
+                j > 4 ? j = -1 : '';
+                if((pieceLocation[0]+ 1 + x) <= -1 || (pieceLocation[0]+ 1 + x) >= 8 || (pieceLocation[1] - y) <= -1 || (pieceLocation[1] - y) >= 8){
+                    console.log(y,x);
+                } else {
+                    let currTile = boardArr[helperArr[pieceLocation[0]+ 1 + x]][pieceLocation[1] - y];
+                    console.log( y, x);
+                    
+                    if(currTile.childNodes.length === 0){
+                        currTile.classList.add('possible');
+                        possibleMoves.push(currTile);
+                    } else if(currTile.childNodes[0].alt.split('')[0] !== piece[0]){
+                        currTile.classList.add('possible');
+                        possibleMoves.push(currTile);
+                    }
+                }
+                
            }
 
             break;
