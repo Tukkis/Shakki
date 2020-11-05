@@ -215,7 +215,7 @@ function calcPossibleMoves(piece, pieceLocation){
                 x = y - Math.floor(j/5)
                 y = newY;
                 j > 4 ? j = -1 : '';
-                if((pieceLocation[0]+ 1 + x) <= -1 || (pieceLocation[0]+ 1 + x) >= 8 || (pieceLocation[1] - y) <= -1 || (pieceLocation[1] - y) >= 8){
+                if((pieceLocation[0]+ x) <= -1 || (pieceLocation[0]+ 1 + x) >= 8 || (pieceLocation[1] - y) <= -1 || (pieceLocation[1] - y) >= 8){
                     console.log(y,x);
                 } else {
                     let currTile = boardArr[helperArr[pieceLocation[0]+ 1 + x]][pieceLocation[1] - y];
