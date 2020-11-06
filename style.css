@@ -32,6 +32,20 @@
     margin-bottom: 90px;
 }
 
+#flipside{
+    display: grid;
+    transform: translate(-800px);
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;
+    font-size: 1rem;
+    line-height: 1.43;
+}
+
+#flipside>p{
+    height: 10px;
+    width: 10px;
+    margin-bottom: 90px;
+}
+
 #bottom{
     display: grid;
     grid-auto-flow: column;
@@ -47,6 +61,21 @@
     margin-left: 90px;
 }
 
+#flipbottom{
+    display: grid;
+    grid-auto-flow: column;
+    transform: translate(0, -22px);
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif;
+    font-size: 1rem;
+    line-height: 1.43;
+}
+
+#flipbottom>p{
+    height: 1px;
+    width: 10px;
+    margin-left: 90px;
+}
+
 .tile, .tile>img{
     width: 100px;
     height: 100px;
@@ -55,4 +84,12 @@
 .possible{
     box-shadow: 0px 0px 10px red;
     z-index: 1;
+}
+
+.flip{
+    transform: rotate(180deg);
+}
+
+.displayer{
+    display: none !important;
 }

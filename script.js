@@ -1,12 +1,16 @@
 const chessBoard = document.getElementById('chessboard');
 const boardSide = document.getElementById('side');
 const boardBottom = document.getElementById('bottom');
+const flipButton = document.getElementById('flipbutton');
+const flipBoardBottom = document.getElementById('flipbottom');
+const flipBoardSide = document.getElementById('flipside');
 let moveAudio = new Audio('./assets/move.wav');
 let boardArr = [];
 let piecesArr = [];
 let helperArr = [8, 7, 6, 5, 4, 3, 2, 1, 0];
 let swtich = false;
 let possibleMoves = [];
+let checkedSquares = [];
 let player = 'w';
 let enPassant = [];
 let checked = false;
@@ -40,6 +44,14 @@ function createBoard(){
         column % 2 !== 1 ? bottom.style.color = "#eeeed2" : bottom.style.color = "#769656";  
         boardSide.appendChild(side);
         boardBottom.appendChild(bottom);
+        let flipSide = document.createElement('p');
+        let flipBottom = document.createElement('p');
+        flipSide.innerHTML = helperArr[column] + 1;
+        flipBottom.innerHTML = toLetters(column).toLowerCase();
+        column % 2 === 1 ? flipSide.style.color = "#eeeed2" : flipSide.style.color = "#769656"; 
+        column % 2 !== 1 ? flipBottom.style.color = "#eeeed2" : flipBottom.style.color = "#769656";  
+        flipBoardSide.appendChild(flipSide);
+        flipBoardBottom.appendChild(flipBottom);
     }
     let w = 'w';
     let b = 'b';
@@ -64,6 +76,22 @@ function drawPieces(){
     }
 }
 
+function checkChecks(who){
+    checkedSquares = [];
+    who === 'w' ? who = 'b' : who = 'w';
+    piecesArr.forEach((row,i) => {row.forEach((square,j) => {
+        if(who===square[0]){
+            console.log(square, helperArr[i+1], j)
+            calcPossibleMoves(square,[helperArr[i+1], j],true)
+        }
+    })});
+    checkedSquares.map(function(sqr){
+        if(sqr.childNodes.length > 0 && sqr.childNodes[0].alt.split('')[1] === 'K'){
+            checked = true;
+        }
+    })
+}
+
 function move(e){
     e.stopPropagation()
     const pieceLocation = [Number(e.target.dataset.key.split('')[1]) - 1, e.target.dataset.key.split('')[0].charCodeAt(0) - 97];
@@ -72,7 +100,7 @@ function move(e){
         swtich != false ? swtich[0] === piece[0] ? swtich = [piece[0], e.target] : '' : swtich = [piece[0], e.target];
         possibleMoves.forEach(possible => possible.classList.remove('possible'));
         possibleMoves = [];
-        calcPossibleMoves(piece,pieceLocation);
+        calcPossibleMoves(piece,pieceLocation,false);
     } else {
         moveTo(boardArr[helperArr[pieceLocation[0] + 1]][pieceLocation[1]], true);
     }
@@ -101,15 +129,23 @@ function moveTo(tile, takes){
             possibleMoves = [];
             enPassant[1] !== player ? enPassant = [] : '';
             player === 'w' ? player = 'b' : player = 'w';
+            checkChecks(player);
         }
     }
 }
 
-function calcPossibleMoves(piece, pieceLocation){
+function calcPossibleMoves(piece, pieceLocation, checkCalc){
     possibleMoves.forEach(possible => possible.classList.remove('possible'));
     possibleMoves = [];
     let side;
     player === 'w' ? side = 1 : side = -1;
+    checkCalc ? side *= -1 : '';
+    if(checked){
+        piece = [player, 'K'];
+        let kingLoc = document.querySelector(`[alt="${piece[0]}${piece[1]}"]`);
+        swtich = [player, kingLoc];
+        pieceLocation = [kingLoc.dataset.key.split('')[1]-1,kingLoc.dataset.key.split('')[0].charCodeAt(0) - 97];
+    }
     switch (piece[1]) {
 
         case 'p':
@@ -117,22 +153,27 @@ function calcPossibleMoves(piece, pieceLocation){
             let nextTile = boardArr[helperArr[pieceLocation[0]+1+(1 * side)]][pieceLocation[1]];
             let yummyTileLeft = boardArr[helperArr[pieceLocation[0]+1+(1 * side)]][pieceLocation[1]-1];
             let yummyTileRight = boardArr[helperArr[pieceLocation[0]+1+(1 * side)]][pieceLocation[1]+1];
-            if(yummyTileLeft && yummyTileLeft.childNodes.length > 0 && yummyTileLeft.childNodes[0].alt.split('')[0] !== piece[0] || yummyTileLeft === enPassant[0] ){
+            if(yummyTileLeft && yummyTileLeft.childNodes.length > 0 && yummyTileLeft.childNodes[0].alt.split('')[0] !== piece[0] || (yummyTileLeft && yummyTileLeft === enPassant[0])){
                 yummyTileLeft.classList.add('possible');
-                possibleMoves.push(yummyTileLeft);
-            } 
-            if (yummyTileRight && yummyTileRight.childNodes.length > 0 && yummyTileRight.childNodes[0].alt.split('')[0] !== piece[0] || yummyTileRight === enPassant[0]){
+                possibleMoves.push(yummyTileLeft); 
+            } else if (yummyTileLeft && yummyTileLeft.childNodes.length === 0 && checkCalc){
+                possibleMoves.push(yummyTileLeft); 
+            }
+            if (yummyTileRight && yummyTileRight.childNodes.length > 0 && yummyTileRight.childNodes[0].alt.split('')[0] !== piece[0] || (yummyTileRight && yummyTileRight === enPassant[0])){
                 yummyTileRight.classList.add('possible');
                 possibleMoves.push(yummyTileRight);
+            } else if (yummyTileRight && yummyTileRight.childNodes.length === 0 && checkCalc){
+                possibleMoves.push(yummyTileRight);
             }
-
             if(pieceLocation[0] * side === 1 || pieceLocation[0] * side === -6){
                 for(let i = 1; i < 3; i++){
                     let currTile = boardArr[helperArr[pieceLocation[0]+1+(i*side)]][pieceLocation[1]];
                     if(currTile.childNodes.length === 0){
-                        currTile.classList.add('possible');
-                        possibleMoves.push(currTile);
-                        i === 1 ? enPassant = [currTile, player, pieceLocation[0] + 2 * side, pieceLocation[1]]: '';
+                        if(!checkCalc){
+                            currTile.classList.add('possible');
+                            possibleMoves.push(currTile);
+                            i === 1 ? enPassant = [currTile, player, pieceLocation[0] + 2 * side, pieceLocation[1]]: '';
+                        }
                     } else {
                         i = 3;
                     }
@@ -477,15 +518,14 @@ function calcPossibleMoves(piece, pieceLocation){
             let a = 1;
             let b = 0;
             for(let i = 0, j = 1; i <= 7; i++, j++){
-                console.log(a, b);
                 
                 if((pieceLocation[0]+ a) <= -1 || (pieceLocation[0]+ 1 + a) >= 8 || (pieceLocation[1] - b) <= -1 || (pieceLocation[1] - b) >= 8){
                 } else {
                     let currTile = boardArr[helperArr[pieceLocation[0]+ 1 + a]][pieceLocation[1] - b];
-                    if(currTile.childNodes.length === 0){
+                    if(currTile.childNodes.length === 0 && !checkedSquares.includes(currTile)){
                         currTile.classList.add('possible');
                         possibleMoves.push(currTile);
-                    } else if(currTile.childNodes[0].alt.split('')[0] !== piece[0]){
+                    } else if(currTile.childNodes.length > 0 && currTile.childNodes[0].alt.split('')[0] !== piece[0] && !checkedSquares.includes(currTile)){
                         currTile.classList.add('possible');
                         possibleMoves.push(currTile);
                     }
@@ -501,8 +541,28 @@ function calcPossibleMoves(piece, pieceLocation){
         default:
             break;
     }
+    if(checkCalc){
+        possibleMoves.forEach(sqr => checkedSquares.includes(sqr) ? sqr : checkedSquares.push(sqr))
+        possibleMoves.forEach(possible => possible.classList.remove('possible'));;
+        possibleMoves = [];
+    }
+    checked = false;
 }
 
 createBoard()
 drawPieces()
 
+
+flipBoardSide.offsetLeft = boardSide.offsetLeft;
+flipBoardSide.offsetTop = boardSide.offsetTop;
+flipBoardBottom.offsetLeft = boardBottom.offsetLeft;
+flipBoardBottom.offsetTop = boardBottom.offsetTop;
+
+flipButton.addEventListener('click', function(){
+    chessBoard.classList.toggle('flip');
+    boardArr.forEach(row => row.forEach(cell => cell.classList.toggle('flip')));
+    boardSide.classList.toggle('displayer');
+    flipBoardSide.classList.toggle('displayer');
+    boardBottom.classList.toggle('displayer');
+    flipBoardBottom.classList.toggle('displayer');
+})
